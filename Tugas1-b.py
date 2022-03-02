@@ -6,6 +6,7 @@ def stemmer_stemming(t):
   stemmer = factory.create_stemmer()
 
   filename = (t + '.txt')
+  start = time.time()
   teks = open(filename, "r").read()
   teks_stem = stemmer.stem(teks)
   print(teks_stem)
@@ -17,16 +18,13 @@ def convert_seconds(seconds):
     return days, hours, minutes, seconds
   
 stemmer_stemming("text10")
-# start = time.time()
-# waktu = convert_seconds(time.time() - start)
-# print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
+waktu = convert_seconds(time.time() - start)
+print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
 
 stemmer_stemming("text15")
-# start = time.time()
-# waktu = convert_seconds(time.time() - start)
-# print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
+waktu = convert_seconds(time.time() - start)
+print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
 
 stemmer_stemming("text20")
-# start = time.time()
-# waktu = convert_seconds(time.time() - start)
-# print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
+waktu = convert_seconds(time.time() - start)
+print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
