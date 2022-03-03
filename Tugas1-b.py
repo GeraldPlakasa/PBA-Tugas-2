@@ -2,17 +2,24 @@ import multiprocessing as mp
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import time
 from multiprocessing import Process, Queue
+from tkinter import *
+from tkinter import ttk
+import tkinter as tk
+from functools import partial
 
 queue = Queue()
+waktu_SP = []
+waktu_MP = []
 
-def read_in_chunks(file_object, chunk_size=1024 * 10):
+def read_in_chunks(file_object, chunk_size=1024 * 1000):
     while True:
         data = file_object.read(chunk_size)
         if not data:
             break
         yield data
 
-def stemmer_stemming(t):
+def stemmer_stemming(t, table_hasil, idx):
+    global waktu_SP, waktu_MP
     factory = StemmerFactory()
     stemmer = factory.create_stemmer()
 
@@ -21,17 +28,27 @@ def stemmer_stemming(t):
     start = time.time()
     teks_stem = stemmer.stem(teks)
     waktu = convert_seconds(time.time() - start)
-    print(f'waktu proses: {waktu}')
+    print(f'waktu eksekusi: {waktu}')
 
-def stem_multiprocessing(stemmer, data, proc_num):
+    try:
+      table_hasil.insert(parent='',index='end',iid=idx,text='',
+      values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),round(waktu[3]),0))
+      table_hasil.pack()
+    except Exception as e:
+      table_hasil.item(idx,text="",values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),round(waktu[3]),waktu_MP[idx]))
+    
+    waktu_SP.append(round(waktu[3]))
+
+def stem_mp(stemmer, data, proc_num):
     start = time.time()
     result = stemmer.stem(data)
     waktu = convert_seconds(time.time() - start)
     print(f'dari process nomor ke-{proc_num}, waktu eksekusi {waktu}')
-    queue.put((result, proc_num))
+    queue.put((result, proc_num, waktu))
     return result
 
-def stemmer_stemming_multiprocessing(t):
+def stemmer_stemming_mp(t, table_hasil, idx):
+    global waktu_SP, waktu_MP
     factory = StemmerFactory()
     stemmer = factory.create_stemmer()
     filename = (t + '.txt')
@@ -43,7 +60,7 @@ def stemmer_stemming_multiprocessing(t):
         data_pieces.append(piece)
 
     for idx, piece in enumerate(data_pieces):
-        p = Process(target=stem_multiprocessing, args=(stemmer, piece, idx))
+        p = Process(target=stem_mp, args=(stemmer, piece, idx))
         p.start()
         processes.append(p)
 
@@ -57,9 +74,18 @@ def stemmer_stemming_multiprocessing(t):
     for i in result_teks:
         teks_hasil += i[0]
 
-    f = open("hasil.txt", "w")
-    f.write(teks_hasil)
-    f.close()
+    times = max(result_teks, key=lambda x: x[2])
+    print("")
+    print(f'waktu eksekusi: {times[2]}')
+
+    try:
+      table_hasil.insert(parent='',index='end',iid=idx,text='',
+      values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),0,round(times[2])))
+      table_hasil.pack()
+    except Exception as e:
+      table_hasil.item(idx,text="",values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),waktu_SP[idx],round(times[2])))
+    
+    waktu_MP.append(round(waktu[3]))
   
 def convert_seconds(seconds):
     days, seconds = divmod(seconds, 24 * 60 * 60)
@@ -67,28 +93,95 @@ def convert_seconds(seconds):
     minutes, seconds = divmod(seconds, 60)
     return days, hours, minutes, seconds
 
+def btnStemming(table_hasil):
+
+  print("Stemming")
+  print("")
+  print("File 10MB")
+  stemmer_stemming("teks10", table_hasil, 0)
+
+  print("File 15MB")
+  stemmer_stemming("teks15", table_hasil, 1)
+
+  print("File 20MB")
+  stemmer_stemming("teks20", table_hasil, 2)
+
+  print("_"*100)
+
+def btnStemmingMultiprocessing():
+
+  print("Stemming Multiprocessing")
+  print("")
+  print("File 10MB")
+  stemmer_stemming_mp("teks10", table_hasil, 0)
+
+  print("File 15MB")
+  stemmer_stemming_mp("teks15", table_hasil, 1)
+
+  print("File 20MB")
+  stemmer_stemming_mp("teks20", table_hasil, 2)
+
+  print("_"*100)
+
 if __name__ == '__main__':
 
-    print("Stemming")
-    print("")
-    print("File 10MB")
-    stemmer_stemming("teks10")
+  struct = Tk()
+  struct.geometry("930x420")
+  struct.title("Pemrosesan Bahasa Alami")
 
-    print("File 15MB")
-    stemmer_stemming("teks15")
+  box1 = tk.Label(struct)
 
-    print("File 20MB")
-    stemmer_stemming("teks20")
+  box1.pack(
+      ipadx=10,
+      ipady=10,
+      expand=True,
+      fill='both',
+      side='left'
+  )
 
-    print("_"*100)
+  box2 = tk.Label(struct)
 
-    print("Stemming Multiprocessing")
-    print("")
-    print("File 10MB")
-    stemmer_stemming_multiprocessing("teks10")
+  box2.pack(
+      ipadx=10,
+      ipady=10,
+      expand=True,
+      fill='both',
+      side='left'
+  )
 
-    print("File 15MB")
-    stemmer_stemming_multiprocessing("teks15")
+  label = Label(box1, text="Proses Stemming", bg="gray",
+                fg="white", font=("Comic Sans MS", 20, "bold"))
+  label.place(relx=.5, rely=.2, anchor='center')
+  struct.config(background="gray")
+  text = StringVar()
 
-    print("File 20MB")
-    stemmer_stemming_multiprocessing("teks20")
+  tabel_frame = Frame(box2)
+  tabel_frame.pack()
+
+  table_hasil = ttk.Treeview(tabel_frame)
+  table_hasil['columns'] = ('data', 'size', 'time_sp', 'time_mp')
+
+  table_hasil.column("#0", width=0,  stretch=NO)
+  table_hasil.column("data",anchor=CENTER, width=100)
+  table_hasil.column("size",anchor=CENTER,width=100)
+  table_hasil.column("time_sp",anchor=CENTER,width=100)
+  table_hasil.column("time_mp",anchor=CENTER,width=100)
+
+  table_hasil.heading("#0",text="",anchor=CENTER)
+  table_hasil.heading("data",text="Data",anchor=CENTER)
+  table_hasil.heading("size",text="Size (MB)",anchor=CENTER)
+  table_hasil.heading("time_sp",text="SP Time (sec)",anchor=CENTER)
+  table_hasil.heading("time_mp",text="MP Time (sec)",anchor=CENTER)
+
+  table_hasil.pack()
+
+  button = Button(box1, text="Stemming", font=(
+    "Times", 10, "bold"), width=30, bd=2, command=partial(btnStemming, table_hasil))
+  button.place(relx=.5, rely=.5, anchor='center')
+  button = Button(box1, text="Stemming Multiprocessing", font=(
+    "Times", 10, "bold"), width=30, bd=2, command=btnStemmingMultiprocessing)
+  button.place(relx=.5, rely=.7, anchor='center')
+
+  
+
+  struct.mainloop()
