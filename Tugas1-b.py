@@ -27,23 +27,23 @@ def stemmer_stemming(t, table_hasil, idx):
     teks = open(filename, "r", encoding="utf-8").read()
     start = time.time()
     teks_stem = stemmer.stem(teks)
-    waktu = convert_seconds(time.time() - start)
-    print(f'waktu eksekusi: {waktu}')
+    waktu = time.time() - start
+    print(f'waktu eksekusi: {convert_seconds(waktu)}')
 
     try:
-      table_hasil.insert(parent='',index='end',iid=idx,text='',
-      values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),round(waktu[3]),0))
+      table_hasil.insert(parent='',index='end', iid=idx, text='', 
+      values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),round(waktu),0))
       table_hasil.pack()
     except Exception as e:
-      table_hasil.item(idx,text="",values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),round(waktu[3]),waktu_MP[idx]))
+      table_hasil.item(idx,text="",values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),round(waktu),waktu_MP[idx]))
     
-    waktu_SP.append(round(waktu[3]))
+    waktu_SP.append(round(waktu))
 
 def stem_mp(stemmer, data, proc_num):
     start = time.time()
     result = stemmer.stem(data)
-    waktu = convert_seconds(time.time() - start)
-    print(f'dari process nomor ke-{proc_num}, waktu eksekusi {waktu}')
+    waktu = time.time() - start
+    print(f'dari process nomor ke-{proc_num}, waktu eksekusi {convert_seconds(waktu)}')
     queue.put((result, proc_num, waktu))
     return result
 
@@ -76,7 +76,7 @@ def stemmer_stemming_mp(t, table_hasil, idx):
 
     times = max(result_teks, key=lambda x: x[2])
     print("")
-    print(f'waktu eksekusi: {times[2]}')
+    print(f'waktu eksekusi: {convert_seconds(times[2])}')
 
     try:
       table_hasil.insert(parent='',index='end',iid=idx,text='',
@@ -85,7 +85,7 @@ def stemmer_stemming_mp(t, table_hasil, idx):
     except Exception as e:
       table_hasil.item(idx,text="",values=(filename, str(filename.replace("teks", "").replace(".txt", "") + " MB"),waktu_SP[idx],round(times[2])))
     
-    waktu_MP.append(round(waktu[3]))
+    waktu_MP.append(round(times[2]))
   
 def convert_seconds(seconds):
     days, seconds = divmod(seconds, 24 * 60 * 60)
