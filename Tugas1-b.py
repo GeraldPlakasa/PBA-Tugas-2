@@ -95,6 +95,13 @@ def convert_seconds(seconds):
 
 def btnStemming(table_hasil):
 
+  try:
+    table_hasil.delete(0)
+    table_hasil.delete(1)
+    table_hasil.delete(2)
+  except Exception as e:
+    print(e)
+  
   print("Stemming")
   print("")
   print("File 10MB")
@@ -108,7 +115,14 @@ def btnStemming(table_hasil):
 
   print("_"*100)
 
-def btnStemmingMultiprocessing():
+def btnStemmingMultiprocessing(table_hasil):
+
+  try:
+    table_hasil.delete(0)
+    table_hasil.delete(1)
+    table_hasil.delete(2)
+  except Exception as e:
+    print(e)
 
   print("Stemming Multiprocessing")
   print("")
@@ -179,9 +193,7 @@ if __name__ == '__main__':
     "Times", 10, "bold"), width=30, bd=2, command=partial(btnStemming, table_hasil))
   button.place(relx=.5, rely=.5, anchor='center')
   button = Button(box1, text="Stemming Multiprocessing", font=(
-    "Times", 10, "bold"), width=30, bd=2, command=btnStemmingMultiprocessing)
+    "Times", 10, "bold"), width=30, bd=2, command=partial(btnStemmingMultiprocessing, table_hasil))
   button.place(relx=.5, rely=.7, anchor='center')
-
-  
 
   struct.mainloop()
