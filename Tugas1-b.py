@@ -6,25 +6,29 @@ def stemmer_stemming(t):
   stemmer = factory.create_stemmer()
 
   filename = (t + '.txt')
+  teks = open(filename, "r", encoding="utf-8").read()
   start = time.time()
-  teks = open(filename, "r").read()
   teks_stem = stemmer.stem(teks)
-  print(teks_stem)
+  waktu = convert_seconds(time.time() - start)
+  print(f'waktu proses: {waktu}')
   
 def convert_seconds(seconds):
     days, seconds = divmod(seconds, 24 * 60 * 60)
     hours, seconds = divmod(seconds, 60 * 60)
     minutes, seconds = divmod(seconds, 60)
     return days, hours, minutes, seconds
-  
-stemmer_stemming("text10")
-waktu = convert_seconds(time.time() - start)
-print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
 
-stemmer_stemming("text15")
-waktu = convert_seconds(time.time() - start)
-print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
+if __name__ == '__main__':
 
-stemmer_stemming("text20")
-waktu = convert_seconds(time.time() - start)
-print('waktu proses: {:.0f}:{:.0f}:{:.0f}'.format(waktu[1], waktu[2], waktu[3]))
+  print("Stemming")
+  print("")
+  print("File 10MB")
+  stemmer_stemming("teks10")
+
+  print("File 15MB")
+  stemmer_stemming("teks15")
+
+  print("File 20MB")
+  stemmer_stemming("teks20")
+
+  print("_"*100)
